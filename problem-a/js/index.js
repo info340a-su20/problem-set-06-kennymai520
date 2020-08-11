@@ -54,13 +54,9 @@ function renderTrack(song) {
 //You can test this function by passing it the `EXAMPLE_SEARCH_RESULTS` object.
 
 function renderSearchResults(input) {
-  if (input.length == 0) {
-    renderError(new Error("No results found"));
-  } else {
-    document.querySelector('#records').innerHTML = '';
-    for (let i = 0; i < input.results.length; i++) {
-      renderTrack(input.results[i]);
-    }
+  document.querySelector('#records').innerHTML = '';
+  for (let i = 0; i < input.results.length; i++) {
+    renderTrack(input.results[i]);
   }
 }
 
@@ -92,16 +88,17 @@ function fetchTrackList() {
   event.preventDefault();
   let searchTerm = document.querySelector('#searchQuery').value;
   let URL = URL_TEMPLATE.replace('{searchTerm}', searchTerm);
-  togglerSpinner()
+  //togglerSpinner()
   let promise = fetch(URL)
     .then(function(response) {
       return response.json();
     })
     .then(function(data) {
       renderSearchResults(data);
-    });
-    //.catch(renderError(new Error('no results')));
-  togglerSpinner();
+    })
+    .catch(error => renderError(error)
+    );
+  //togglerSpinner();
   return promise;
 }
 
