@@ -55,8 +55,12 @@ function renderTrack(song) {
 
 function renderSearchResults(input) {
   document.querySelector('#records').innerHTML = '';
-  for (let i = 0; i < input.results.length; i++) {
-    renderTrack(input.results[i]);
+  if (input.results.length == 0) {
+    renderError(new Error('No results found'));
+  } else {
+    for (let i = 0; i < input.results.length; i++) {
+      renderTrack(input.results[i]);
+    }
   }
 }
 
@@ -81,14 +85,12 @@ function renderSearchResults(input) {
 //
 //You can test this function by calling the method and passing it the name of 
 //your favorite band (you CANNOT test it with the search button yet!)
-const URL_TEMPLATE = "https://itunes.apple.com/search?entity=song&limit=25&term={searchTerm}";
+// const URL_TEMPLATE = "https://itunes.apple.com/search?entity=song&limit=25&term={searchTerm}";
 
 
-function fetchTrackList() {
-  event.preventDefault();
-  let searchTerm = document.querySelector('#searchQuery').value;
-  let URL = URL_TEMPLATE.replace('{searchTerm}', searchTerm);
-  //togglerSpinner()
+function fetchTrackList(searchTerms) {
+  let URL = "https://itunes.apple.com/search?entity=song&limit=25&term=" + searchTerms;
+  togglerSpinner()
   let promise = fetch(URL)
     .then(function(response) {
       return response.json();
@@ -96,9 +98,12 @@ function fetchTrackList() {
     .then(function(data) {
       renderSearchResults(data);
     })
-    .catch(error => renderError(error)
-    );
-  //togglerSpinner();
+    .catch((error) => {
+      renderError(error)
+    })
+    .then(() => {
+      togglerSpinner();
+    });
   return promise;
 }
 
@@ -109,7 +114,12 @@ function fetchTrackList() {
 //user-entered `#searchQuery` value. Use the `preventDefault()` function to keep
 //the form from being submitted as usual (and navigating to a different page).
 
-document.querySelector('button').addEventListener('click', fetchTrackList);
+document.querySelector('button').addEventListener('click', function(event) {
+  event.preventDefault();
+  let searchTerm = document.querySelector('#searchQuery').value;
+  fetchTrackList(searchTerm);
+} 
+);
 
 
 //Next, add some error handling to the page. Define a function `renderError()`
@@ -129,8 +139,7 @@ document.querySelector('button').addEventListener('click', fetchTrackList);
 function renderError(err) {
   let errMessage = document.createElement('p');
   errMessage.classList.add('alert', 'alert-danger');
-  console.log(err);
-  errMessage.textContent = err.message;
+  errMessage.innerHTML = err.message;
   document.querySelector('#records').appendChild(errMessage);
 }
 
